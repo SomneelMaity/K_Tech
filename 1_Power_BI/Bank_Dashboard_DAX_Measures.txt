@@ -1,0 +1,202 @@
+================================================================================
+BANK CUSTOMER DASHBOARD - ALL DAX MEASURES AND COLUMNS
+================================================================================
+
+Copy and paste these into Power BI Desktop
+
+================================================================================
+1. DATE TABLE (Modeling → New Table)
+================================================================================
+
+DateTable = 
+ADDCOLUMNS(
+    CALENDAR(DATE(2016,1,1), DATE(2022,12,31)),
+    "Year", YEAR([Date]),
+    "Month", FORMAT([Date], "MMMM"),
+    "MonthNum", MONTH([Date]),
+    "MonthShort", FORMAT([Date], "MMM"),
+    "Quarter", "Q" & FORMAT([Date], "Q"),
+    "MonthYear", FORMAT([Date], "MMM YYYY")
+)
+
+NOTE: After creating, right-click DateTable → Mark as Date Table → Select [Date] column
+
+================================================================================
+2. CALCULATED COLUMN (Data View → Bank Departure table → New Column)
+================================================================================
+
+CreditCategory = 
+SWITCH(
+    TRUE(),
+    'Bank Departure'[CreditScore] >= 800, "Excellent",
+    'Bank Departure'[CreditScore] >= 740, "Very Good",
+    'Bank Departure'[CreditScore] >= 670, "Good",
+    'Bank Departure'[CreditScore] >= 580, "Fair",
+    'Bank Departure'[CreditScore] < 580, "Poor",
+    "Unknown"
+)
+
+================================================================================
+3. DAX MEASURES (Modeling → New Measure)
+================================================================================
+
+--- KPI Measures (for Cards) ---
+
+Total Customers = DISTINCTCOUNT('Bank Departure'[CustomerId])
+
+Active Customers = 
+CALCULATE(
+    [Total Customers],
+    'Bank Departure'[IsActiveMember] = 1
+)
+
+Inactive Customers = 
+CALCULATE(
+    [Total Customers],
+    'Bank Departure'[IsActiveMember] = 0
+)
+
+Credit Card Holder = 
+CALCULATE(
+    [Total Customers],
+    'Bank Departure'[HasCrCard] = 1
+)
+
+Non Credit Holders = 
+CALCULATE(
+    [Total Customers],
+    'Bank Departure'[HasCrCard] = 0
+)
+
+Exit Customer = 
+CALCULATE(
+    [Total Customers],
+    'Bank Departure'[Exited] = 1
+)
+
+Retain Customers = 
+CALCULATE(
+    [Total Customers],
+    'Bank Departure'[Exited] = 0
+)
+
+--- Time Intelligence Measures (for Line Chart) ---
+
+Previous Month Exit = 
+CALCULATE(
+    [Exit Customer],
+    DATEADD(DateTable[Date], -1, MONTH)
+)
+
+================================================================================
+4. OPTIONAL ENHANCEMENT MEASURES
+================================================================================
+
+--- Percentage Measures ---
+
+Active % = 
+DIVIDE([Active Customers], [Total Customers], 0)
+
+Inactive % = 
+DIVIDE([Inactive Customers], [Total Customers], 0)
+
+Exit Rate = 
+DIVIDE([Exit Customer], [Total Customers], 0)
+
+Retention Rate = 
+DIVIDE([Retain Customers], [Total Customers], 0)
+
+Card Holder % = 
+DIVIDE([Credit Card Holder], [Total Customers], 0)
+
+--- Average Measures ---
+
+Avg Balance = AVERAGE('Bank Departure'[Balance])
+
+Avg Credit Score = AVERAGE('Bank Departure'[CreditScore])
+
+Avg Age = AVERAGE('Bank Departure'[Age])
+
+Avg Tenure = AVERAGE('Bank Departure'[Tenure])
+
+Avg Products = AVERAGE('Bank Departure'[NumOfProducts])
+
+Avg Salary = AVERAGE('Bank Departure'[EstimatedSalary])
+
+--- Year over Year Analysis ---
+
+YoY Customer Growth = 
+VAR CurrentYearCustomers = [Total Customers]
+VAR PreviousYearCustomers = 
+    CALCULATE(
+        [Total Customers],
+        DATEADD(DateTable[Date], -1, YEAR)
+    )
+RETURN
+    DIVIDE(CurrentYearCustomers - PreviousYearCustomers, PreviousYearCustomers, 0)
+
+YoY Customer Growth Abs = 
+VAR CurrentYearCustomers = [Total Customers]
+VAR PreviousYearCustomers = 
+    CALCULATE(
+        [Total Customers],
+        DATEADD(DateTable[Date], -1, YEAR)
+    )
+RETURN
+    CurrentYearCustomers - PreviousYearCustomers
+
+--- Dynamic Text Measures (for Titles) ---
+
+Total Customers Text = 
+"Total: " & FORMAT([Total Customers], "#,##0")
+
+Exit Rate Text = 
+"Exit Rate: " & FORMAT([Exit Rate], "0.0%")
+
+================================================================================
+5. TABLE RELATIONSHIPS TO CREATE (Model View)
+================================================================================
+
+Create these relationships (Many to One, Single direction):
+
+1. Bank Departure[GeographyID]     → Geography[GeographyID]
+2. Bank Departure[GenderID]        → Gender[GenderID]
+3. Bank Departure[HasCrCard]       → CreditCard[HasCrCard]
+4. Bank Departure[IsActiveMember]  → ActiveCustomer[IsActiveMember]
+5. Bank Departure[Exited]          → ExitCustomer[ExitID]
+6. Bank Departure[CustomerId]      → CustomerInfo[CustomerId]
+7. Bank Departure[Bank DOJ]        → DateTable[Date]
+
+================================================================================
+6. VALIDATION NUMBERS (No Filters Applied)
+================================================================================
+
+When you create dashboard with no filters, you should see:
+
+Total Customers: 10,000
+Active Customers: 5,151
+Inactive Customers: 4,849
+Credit Card Holder: 7,055
+Non Credit Holders: 2,945
+Exit Customer: 2,037
+Retain Customers: 7,963
+
+If your numbers don't match, check:
+- Relationships are correct
+- Using DISTINCTCOUNT (not COUNTROWS)
+- No duplicate data
+- All tables imported correctly
+
+================================================================================
+7. QUICK TIPS
+================================================================================
+
+- Create measures one at a time and test each
+- Use Format Painter to copy formatting between visuals
+- Test slicers after adding each one
+- Save frequently!
+- Keep this file handy for reference
+
+================================================================================
+END OF DAX MEASURES FILE
+================================================================================
