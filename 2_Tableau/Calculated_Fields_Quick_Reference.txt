@@ -1,0 +1,269 @@
+====================================================================
+BANK DASHBOARD - CALCULATED FIELDS & PARAMETERS QUICK REFERENCE
+====================================================================
+
+====================
+CALCULATED FIELDS
+====================
+
+--- CUSTOMER SEGMENTATION ---
+
+Active Customers:
+IF [Active Category] = "Active Customer" THEN [CustomerID] END
+
+Inactive Customers:
+IF [Active Category] = "Inactive Customer" THEN [CustomerID] END
+
+Exit Customers:
+IF [Exit Category] = "Exit Customer" THEN [CustomerID] END
+
+Retained Customers:
+IF [Exit Category] = "Retain Customer" THEN [CustomerID] END
+
+Credit Card Holders:
+IF [Category] = "credit card holder" THEN [CustomerID] END
+
+Non Credit Card Holders:
+IF [Category] = "non credit card holder" THEN [CustomerID] END
+
+
+--- COUNT METRICS (FOR KPI CARDS) ---
+
+Total Customers:
+COUNTD([CustomerID])
+
+Active Customers Count:
+COUNTD([Active Customers])
+
+Inactive Customers Count:
+COUNTD([Inactive Customers])
+
+Exit Customers Count:
+COUNTD([Exit Customers])
+
+Retained Customers Count:
+COUNTD([Retained Customers])
+
+Credit Card Holders Count:
+COUNTD([Credit Card Holders])
+
+Non Credit Card Holders Count:
+COUNTD([Non Credit Card Holders])
+
+
+--- TIME CALCULATIONS ---
+
+IMPORTANT: If Bank Departure shows as "Abc" (text) instead of calendar icon,
+use DATE() function to convert:
+
+Year:
+YEAR(DATE([Bank Departure]))
+
+Month Name:
+DATENAME('month', DATE([Bank Departure]))
+
+Month Number:
+MONTH(DATE([Bank Departure]))
+
+If Bank Departure is recognized as Date type, simpler version:
+YEAR([Bank Departure])
+DATENAME('month', [Bank Departure])
+MONTH([Bank Departure])
+
+NOTE: Using [Bank Departure] field for exit/churn analysis (2016-2019)
+
+
+--- CREDIT TYPE GROUPING ---
+
+Credit Type (groups credit scores):
+IF [Credit Score] >= 800 THEN "Excellent"
+ELSEIF [Credit Score] >= 740 THEN "Very Good"
+ELSEIF [Credit Score] >= 670 THEN "Good"
+ELSEIF [Credit Score] >= 580 THEN "Fair"
+ELSE "Poor"
+END
+
+Use this for the "Exit by Credit Type" horizontal bar chart.
+
+
+--- TREND ANALYSIS ---
+
+For line charts showing trends over time:
+- Use Year + Month Name in Columns
+- Exit Customers Count in Rows
+- Sort Month Name by Month Number
+
+
+====================================================================
+PARAMETERS
+====================================================================
+
+--- PARAMETER 1: SELECT YEAR ---
+Name: Select Year Parameter
+Data Type: Integer
+Allowable Values: List (Add: 0 for "All", 2016, 2017, 2018, 2019)
+Current Value: 0
+
+Calculated Field for Year Filter:
+IF [Select Year Parameter] = 0 THEN TRUE 
+ELSEIF [Year] = [Select Year Parameter] THEN TRUE 
+ELSE FALSE END
+
+
+--- PARAMETER 2: SELECT MONTH ---
+Name: Select Month Parameter
+Data Type: String
+Allowable Values: List
+Values: All, January, February, March, April, May, June, July, 
+        August, September, October, November, December
+
+Calculated Field for Month Filter:
+IF [Select Month Parameter] = "All" THEN TRUE 
+ELSEIF [Month Name] = [Select Month Parameter] THEN TRUE 
+ELSE FALSE END
+
+--- PARAMETER 1: SELECT YEAR ---
+Name: Select Year Parameter
+Data Type: Integer
+Allowable Values: List (Add: All, 2016, 2017, 2018, 2019)
+Use Value: 0 for "All", then actual years
+
+Calculated Field for Year Filter:
+IF [Select Year Parameter] = 0 THEN TRUE 
+ELSEIF [Year] = [Select Year Parameter] THEN TRUE 
+ELSE FALSE END
+
+
+--- PARAMETER 2: SELECT MONTH ---
+Name: Select Month Parameter
+Data Type: String
+Allowable Values: List
+Values: All, January, February, March, April, May, June, July, 
+        August, September, October, November, December
+
+Calculated Field for Month Filter:
+IF [Select Month Parameter] = "All" THEN TRUE 
+ELSEIF [Month Name] = [Select Month Parameter] THEN TRUE 
+ELSE FALSE END
+
+
+====================================================================
+ALTERNATIVE FORMULAS (ADVANCED)
+====================================================================
+
+--- Using LOD Expressions ---
+
+Active Customers Count (LOD):
+{FIXED : COUNTD(IF [Active Category] = "Active Customer" 
+THEN [CustomerID] END)}
+
+Exit Rate:
+COUNTD([Exit Customers]) / COUNTD([CustomerID])
+
+Retention Rate:
+COUNTD([Retained Customers]) / COUNTD([CustomerID])
+
+Month-over-Month Change:
+(SUM([Exit Customers Count]) - LOOKUP(SUM([Exit Customers Count]), -1)) 
+/ LOOKUP(SUM([Exit Customers Count]), -1)
+
+
+====================================================================
+CHART-SPECIFIC TIPS
+====================================================================
+
+STACKED BAR CHART (Customer by Year Active Category):
+- Columns: Year
+- Rows: Total Customers (or COUNTD([CustomerID]))
+- Color: Active Category
+- Show Mark Labels
+
+LINE CHART (Exit Trend):
+- Columns: Year, Month Name
+- Rows: Exit Customers Count
+- Color: Year
+- Sort Month Name by Month Number
+- Add markers to lines
+
+HORIZONTAL BAR (Exit by Credit Type):
+- Columns: Exit Customers Count
+- Rows: Credit Type
+- Sort Descending
+
+DONUT CHART (Exit by Gender):
+- Angle: Exit Customers Count
+- Color: Gender Category
+- Overlay white circle for donut effect
+
+PIE CHART (Exit by Category):
+- Angle: Exit Customers Count
+- Color: Category
+- Show % of Total in Labels
+
+
+====================================================================
+FILTERS TO ADD ON DASHBOARD
+====================================================================
+
+1. Select Year (Parameter Control - shows 0=All, 2016-2019)
+2. Select Month (Parameter Control - shows All, Jan-Dec)
+3. Geography Location (Dropdown - All Values)
+4. Active Category (Multiple Values List)
+5. Exit Category (Multiple Values List)
+6. Gender Category (Multiple Values List)
+7. Category (Multiple Values List)
+
+
+====================================================================
+COLOR SCHEME
+====================================================================
+
+Active/Male/Credit Card Holder: Blue (#1F77B4)
+Inactive/Female/Non-Credit: Green (#2CA02C)
+Background: Light Gray (#F5F5F5)
+Borders: Gray (#CCCCCC)
+
+
+====================================================================
+DASHBOARD ACTIONS
+====================================================================
+
+Filter Action:
+Source: All Sheets → Target: All Sheets
+Run on Select, Clear shows all values
+
+Highlight Action:
+Source: All Sheets → Target: Related Sheets
+Run on Hover
+
+====================================================================
+TROUBLESHOOTING COMMON ISSUES
+====================================================================
+
+❌ DATE FIELD SHOWING AS TEXT (Abc not 📅):
+   Solution 1: Data Source tab → Click Abc icon → Select "Date"
+   Solution 2: Use DATE() wrapper in formulas:
+               YEAR(DATE([Bank Departure]))
+               DATENAME('month', DATE([Bank Departure]))
+   Solution 3: Fix Excel file:
+               - Widen column to see if ##### shows dates
+               - Format Cells → Date → m/d/yyyy
+               - Look for green triangles → Convert to Number
+               - Save & Refresh Tableau
+
+❌ YEAR([Bank DOJ]) GIVES ERROR:
+   Problem: Field is text, not date
+   Solution: Use YEAR(DATE([Bank DOJ])) instead
+
+❌ CALCULATED FIELDS SHOWING 0:
+   - Verify exact field spelling: [CustomerID] vs [Customer ID]
+   - Right-click field → Show Filter to see actual values
+   - Check exact string match: "Active Customer" not "Active"
+   - Try CONTAINS(): IF CONTAINS([Active Category], "Active")
+
+❌ COUNTD SHOWS 0 FOR CUSTOMER SEGMENTS:
+   - Check the base calculated field (Active Customers, Exit Customers)
+   - Verify the IF condition matches your data exactly
+   - Test: Create text field [Active Category] to see actual values
+
+====================================================================
