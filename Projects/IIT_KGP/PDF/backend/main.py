@@ -48,9 +48,6 @@ if COLLECTION_NAME not in existing:
         )
     )
 
-# In Memory Storage for the embeddings and metadata
-documents = {}
-
 # cleaning the text by removing extra spaces and newlines, and stripping leading/trailing whitespace
 def clean_text(text):
     text = re.sub(r'\s+', ' ', text)  # Replace multiple whitespace with a single space
@@ -63,9 +60,13 @@ def chunk(text,chunk_size=1000, chunk_overlap=200):     # chunk_overlap is the n
         chunks.append(text[i:i+chunk_size])     # Append a chunk of text to the list of chunks
     return chunks
 
-@app.get("/health")
-def health_check():
-    return {"Message": "Server is running"}
+# @app.get("/health")
+# def health_check():
+#     return {"Message": "Server is running"}
+
+class ChatRequest(BaseModel):
+    filename: str
+    question: str
 
 @app.post("/upload-pdf")        # Endpoint to handle PDF file uploads, extract text, clean it, chunk it, generate embeddings, and store the metadata and embeddings in memory. The endpoint returns the filename, saved path, character count of the cleaned text, a preview of the cleaned text, and the first chunk of text as a response.
 async def upload_pdf(file: UploadFile = File(...)):
@@ -81,8 +82,8 @@ async def upload_pdf(file: UploadFile = File(...)):
     for page in pdf_reader.pages:
         text += page.extract_text()
     
-    cleaned_text = clean_text(text)
-    page_chunk = chunk(cleaned_text)
+    cleaned_text = clean_text(text)         # cleaning the text
+    page_chunk = chunk(cleaned_text)        # chunking the cleaned_text
     embeddings = model.encode(page_chunk)  # Generate embeddings for each chunk of text, model.encode() is used to convert the chunks of text into numerical vectors that capture the semantic meaning of the text, which can be used for various NLP tasks such as similarity search, clustering, or classification.
 
     points = []
@@ -102,7 +103,7 @@ async def upload_pdf(file: UploadFile = File(...)):
                         idx,
 
                     "text":
-                        chunk
+                        page_chunk
                 }
             )
         )
@@ -111,11 +112,6 @@ async def upload_pdf(file: UploadFile = File(...)):
         collection_name=COLLECTION_NAME,
         points=points
     )
-
-    documents[file.filename] = {    # Store the metadata and embeddings in the in-memory storage
-        "chunks": page_chunk,
-        "embeddings": embeddings
-    }
 
     return {
         "filename": file.filename,
@@ -138,6 +134,27 @@ def get_document_by_filename(filename: str):
     return {
         "filename": filename,
         "embeddings": list(documents[filename]["embeddings"].shape),  # Convert numpy array to list for JSON serialization
+    }
+
+app.post("/search")     # Endpoint to handle search queries, perform similarity search using the generated embeddings, and return the most relevant chunks of text based on the user's question.
+def search(request: ChatRequest):
+    query_embedding = (
+        model.encode(
+            request.question
+        ).tolist()
+    )
+    results = qdrant.search(
+        collection_name=COLLECTION_NAME,
+        query_vector=query_embedding,
+        limit=3
+    )
+    chunks = []
+    for result in results:
+        chunks.append(
+            result.payload["text"]
+        )
+    return {
+        "results": chunks
     }
 
 
