@@ -1,0 +1,33 @@
+# LegalBot_System — top-level gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Databases
+*.db
+*.db-shm
+*.db-wal
+
+# Storage / generated files
+platform/backend/storage/
+platform/backend/.env
+
+# Node
+node_modules/
+platform/frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/

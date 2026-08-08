@@ -1,0 +1,53 @@
+{# S10 — Cheque Bounce Demand Notice (NI Act Section 138) #}
+{% extends "base.html" %}
+{% block content %}
+<div class="letter">
+  <p><strong>Date:</strong> {{ notice_date }}</p>
+  <p><em>Sent by Registered Post with Acknowledgement Due</em></p>
+
+  <p><strong>To,</strong><br />
+  {{ drawer_name }}<br />
+  {{ drawer_address }}</p>
+
+  <p>
+    <strong>Subject: Legal Notice under Section 138 of the Negotiable Instruments
+    Act 1881 — Dishonour of Cheque No. {{ cheque_number }}</strong>
+  </p>
+
+  <p>Dear Sir/Madam,</p>
+
+  <p>
+    I, <strong>{{ payee_name }}</strong>, residing at {{ payee_address }}, am
+    writing to notify you that the following cheque issued by you in discharge of a
+    legally enforceable debt / liability has been dishonoured:
+  </p>
+
+  <table>
+    <tr><td>Cheque Number</td><td>{{ cheque_number }}</td></tr>
+    <tr><td>Cheque Date</td><td>{{ cheque_date }}</td></tr>
+    <tr><td>Amount</td><td>₹{{ cheque_amount }}</td></tr>
+    <tr><td>Drawn on Bank</td><td>{{ drawer_bank }}</td></tr>
+    <tr><td>Date of Dishonour</td><td>{{ dishonour_date }}</td></tr>
+    <tr><td>Reason for Dishonour</td><td>{{ dishonour_reason }}</td></tr>
+  </table>
+
+  <p>
+    You are hereby called upon to pay the said amount of
+    <strong>₹{{ cheque_amount }}</strong> within <strong>fifteen (15) days</strong>
+    from the date of receipt of this notice.
+  </p>
+
+  <p>
+    Take notice that in the event of your failure to make payment within the
+    aforesaid period, I shall be constrained to initiate criminal proceedings
+    against you under <strong>Section 138 of the Negotiable Instruments Act 1881</strong>,
+    which is punishable with imprisonment up to two years and/or a fine up to twice
+    the cheque amount, without further notice to you.
+  </p>
+
+  <p>Yours faithfully,</p>
+  <p>{{ payee_name }}<br />
+  {{ payee_address }}<br />
+  {{ payee_contact }}</p>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+anthropic
+replicate
+pydantic>=2
+SQLAlchemy>=2
+python-dotenv
+httpx
+python-multipart

@@ -1,0 +1,56 @@
+{# S5 — Demand Letter for Unpaid Salary / Dues #}
+{% extends "base.html" %}
+{% block content %}
+<div class="letter">
+  <p><strong>Date:</strong> {{ date }}</p>
+
+  <p><strong>To,</strong><br />
+  {{ employer_name }}<br />
+  {{ employer_address }}</p>
+
+  <p><strong>Subject: Demand for Payment of Outstanding Wages / Dues</strong></p>
+
+  <p>Dear Sir/Madam,</p>
+
+  <p>
+    I, <strong>{{ employee_name }}</strong>, was employed with your organisation as
+    <strong>{{ designation }}</strong> from {{ joining_date }} to {{ last_working_day }}.
+    My last drawn monthly salary was ₹{{ last_salary }}.
+  </p>
+
+  <p>
+    Despite my repeated requests, the following dues remain unpaid as on
+    {{ demand_date }}:
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Item</th><th>Amount (₹)</th></tr>
+    </thead>
+    <tbody>
+      {% for item in dues_items %}
+      <tr><td>{{ item.description }}</td><td>{{ item.amount }}</td></tr>
+      {% endfor %}
+      <tr><td><strong>Total Outstanding</strong></td><td><strong>{{ total_dues }}</strong></td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Under the <strong>Code on Wages 2019</strong>, wages are payable by the 7th/10th
+    of the following month. Failure to pay constitutes an offence punishable under
+    Section 45 of the Act.
+  </p>
+
+  <p>
+    I hereby demand payment of ₹{{ total_dues }} within <strong>15 days</strong> of
+    receipt of this notice. Failure to do so will compel me to approach the
+    <strong>Payment of Wages Authority / Labour Commissioner</strong> and pursue all
+    remedies available under the law, including criminal action.
+  </p>
+
+  <p>Yours sincerely,</p>
+  <p>{{ employee_name }}<br />
+  {{ employee_address }}<br />
+  {{ employee_contact }}</p>
+</div>
+{% endblock %}

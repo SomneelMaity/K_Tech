@@ -1,0 +1,17 @@
+{# Base template for all LegalBot generated documents #}
+<!DOCTYPE html>
+<html lang="{{ language | default('en') }}">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+</head>
+<body>
+  <div class="disclaimer">
+    <strong>IMPORTANT DISCLAIMER:</strong> This is a draft document prepared for
+    general awareness only and does not constitute legal advice. Please verify
+    all details with a qualified legal professional before use. Free legal aid is
+    available through NALSA (1516) and your District Legal Services Authority.
+  </div>
+  {% block content %}{% endblock %}
+</body>
+</html>
